@@ -1,0 +1,50 @@
+spring:
+  application:
+    name: buildflow-africa
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/buildflow}
+    username: ${SPRING_DATASOURCE_USERNAME:buildflow}
+    password: ${SPRING_DATASOURCE_PASSWORD:buildflow_dev_password}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+  jackson:
+    deserialization:
+      # A form leaves an unselected optional id or date as "", which means "not set" rather than a
+      # value the parser should reject.
+      accept-empty-string-as-null-object: true
+  flyway:
+    enabled: true
+server:
+  port: 8080
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+app:
+  jwt-secret: ${JWT_SECRET:development-only-secret-change-me-32-bytes-minimum}
+  jwt-ttl-seconds: ${JWT_TTL_SECONDS:900}
+  allowed-origins: ${APP_ALLOWED_ORIGINS:http://localhost:3000}
+  ai-service-url: ${AI_SERVICE_URL:http://localhost:8000}
+
+storage:
+  root: ${STORAGE_ROOT:/data/uploads}
+
+# The first operator account. Override these in production. The default is a local/demo handover
+# credential and the API blocks platform administration until the password is changed.
+platform:
+  owner:
+    email: ${PLATFORM_OWNER_EMAIL:admin@buildflow.africa}
+    password: ${PLATFORM_OWNER_PASSWORD:BuildFlow@2026!Admin}
+    name: ${PLATFORM_OWNER_NAME:Platform Super Admin}
+
+ai:
+  service:
+    url: ${AI_SERVICE_URL:http://ai-service:8000}
+    timeout-seconds: ${AI_TIMEOUT_SECONDS:30}
+
+spring.servlet.multipart:
+  max-file-size: 25MB
+  max-request-size: 30MB

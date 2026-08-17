@@ -1,0 +1,47 @@
+-- Every tenant-scoped table carries updated_at so the shared JPA base class maps cleanly.
+alter table clients add column if not exists updated_at timestamptz;
+alter table projects add column if not exists updated_at timestamptz;
+alter table suppliers add column if not exists updated_at timestamptz;
+alter table materials add column if not exists updated_at timestamptz;
+alter table material_categories add column if not exists updated_at timestamptz;
+alter table labour_rates add column if not exists created_at timestamptz not null default now();
+alter table equipment add column if not exists created_at timestamptz not null default now();
+alter table assemblies add column if not exists created_at timestamptz not null default now();
+alter table assembly_items add column if not exists created_at timestamptz not null default now();
+alter table assembly_items add column if not exists updated_at timestamptz;
+alter table supplier_items add column if not exists created_at timestamptz not null default now();
+alter table supplier_items add column if not exists updated_at timestamptz;
+alter table contract_milestones add column if not exists created_at timestamptz not null default now();
+alter table contract_milestones add column if not exists updated_at timestamptz;
+alter table invoice_items add column if not exists created_at timestamptz not null default now();
+alter table invoice_items add column if not exists updated_at timestamptz;
+alter table payments add column if not exists updated_at timestamptz;
+alter table project_expenses add column if not exists updated_at timestamptz;
+alter table activities add column if not exists updated_at timestamptz;
+alter table notifications add column if not exists updated_at timestamptz;
+alter table project_files add column if not exists updated_at timestamptz;
+alter table estimate_templates add column if not exists updated_at timestamptz;
+alter table estimate_template_sections add column if not exists created_at timestamptz not null default now();
+alter table estimate_template_sections add column if not exists updated_at timestamptz;
+alter table estimate_template_items add column if not exists created_at timestamptz not null default now();
+alter table estimate_template_items add column if not exists updated_at timestamptz;
+alter table tax_rates add column if not exists updated_at timestamptz;
+alter table document_numbering add column if not exists created_at timestamptz not null default now();
+alter table document_numbering add column if not exists updated_at timestamptz;
+alter table quotation_acceptances add column if not exists updated_at timestamptz;
+alter table estimate_sections add column if not exists created_at timestamptz not null default now();
+alter table estimate_sections add column if not exists updated_at timestamptz;
+alter table estimate_items add column if not exists created_at timestamptz not null default now();
+alter table estimate_items add column if not exists updated_at timestamptz;
+alter table leads add column if not exists updated_at timestamptz;
+alter table material_prices add column if not exists updated_at timestamptz;
+
+-- Search and list indexes for the paths the product actually queries.
+create index if not exists idx_clients_tenant_created on clients(tenant_id, created_at desc);
+create index if not exists idx_projects_tenant_created on projects(tenant_id, created_at desc);
+create index if not exists idx_estimates_tenant_updated on estimates(tenant_id, updated_at desc);
+create index if not exists idx_quotations_tenant_status on quotations(tenant_id, status);
+create index if not exists idx_variations_tenant_status on variations(tenant_id, status);
+create index if not exists idx_contracts_tenant_status on contracts(tenant_id, status);
+create index if not exists idx_expenses_tenant_spent on project_expenses(tenant_id, spent_on desc);
+create index if not exists idx_materials_tenant_updated on materials(tenant_id, updated_at desc);

@@ -1,0 +1,66 @@
+services:
+  minio:
+    image: minio/minio:latest
+    platform: linux/amd64
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio-data:/data
+
+  backend:
+    image: obuadey/cs602-backend
+    platform: linux/amd64
+    build: ./backend
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://142.93.40.151:5432/${POSTGRES_DB}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_TTL_SECONDS: ${JWT_TTL_SECONDS:-900}
+      APP_ALLOWED_ORIGINS: ${APP_ALLOWED_ORIGINS:-http://localhost:3000}
+      AUTH_RETURN_RESET_TOKEN: ${AUTH_RETURN_RESET_TOKEN:-false}
+      # Local/demo handover credential. Override in production; the account must change it before
+      # platform administration is allowed.
+      PLATFORM_OWNER_EMAIL: ${PLATFORM_OWNER_EMAIL}
+      PLATFORM_OWNER_PASSWORD: ${PLATFORM_OWNER_PASSWORD}
+      PLATFORM_OWNER_NAME: ${PLATFORM_OWNER_NAME}
+      STORAGE_ROOT: /data/uploads
+      AI_SERVICE_URL: ${AI_SERVICE_URL}
+    volumes:
+      - upload-data:/data/uploads
+    ports:
+      - "8085:8080"
+
+  ai-service:
+    image: obuadey/cs602-ai-service
+    platform: linux/amd64
+    build: ./ai-service
+    environment:
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      AI_MODEL: ${AI_MODEL:-gpt-4o-mini}
+      AI_TIMEOUT_SECONDS: ${AI_TIMEOUT_SECONDS:-25}
+    ports:
+      - "8000:8000"
+
+  frontend:
+    image: obuadey/cs602-frontend
+    platform: linux/amd64
+    build: ./frontend
+    environment:
+      # Server-side only: the browser never calls the API directly.
+      BACKEND_URL: ${BACKEND_URL:-http://backend:8080}
+      NODE_ENV: production
+    ports:
+      - "3003:3000"
+    depends_on:
+      - backend
+      - ai-service
+
+volumes:
+  minio-data:
+  upload-data:
